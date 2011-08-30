@@ -18,6 +18,7 @@
 #
 
 require 'chef/knife/ec2_base'
+require 'chef/api_client'
 
 class Chef
   class Knife
@@ -26,16 +27,34 @@ class Chef
       include Knife::Ec2Base
 
       banner "knife ec2 server delete SERVER [SERVER] (options)"
+      
+      option :purge_node,
+      :long => "--purge-node",
+      :default => false,
+      :boolean => true,
+      :description => "Delete node associated with given EC2 server."
+      
+      option :purge_client,
+      :long => "--purge-client",
+      :default => false,
+      :boolean => true,
+      :description => "Delete API client associated with given EC2 server."
 
+      option :purge,
+      :long => "--purge",
+      :default => false,
+      :boolean => true,
+      :description => "Delete node and API client associated with the given EC2 server."
+      
       def run
 
         validate!
 
         @name_args.each do |instance_id|
-
+          
           begin
             server = connection.servers.get(instance_id)
-
+            
             msg_pair("Instance ID", server.id)
             msg_pair("Flavor", server.flavor_id)
             msg_pair("Image", server.image_id)
@@ -56,10 +75,36 @@ class Chef
 
             ui.warn("Deleted server #{server.id}")
 
+            if config[:purge_client] or config[:purge]
+              ui.msg("Purging client...")
+              @name = get_node_name(instance_id)
+              delete_client = Chef::Knife::ClientDelete.new
+              delete_client.name_args = [@name]
+              delete_client.run
+            end
+
+            if config[:purge_node] or config[:purge]
+              ui.msg("Purging node...")
+              @name ||= get_node_name(instance_id)
+              delete_node = Chef::Knife::NodeDelete.new
+              delete_node.name_args = [@name]
+              delete_node.run
+            end
+
+
           rescue NoMethodError
             ui.error("Could not locate server '#{instance_id}'.  Please verify it was provisioned in the '#{locate_config_value(:region)}' region.")
           end
         end
+      end
+
+      def get_node_name(ec2_id)
+        results = Chef::Search::Query.new.search(:node, "ec2_instance_id:#{ec2_id}")
+        if results.first.length > 1 
+          ui.fatal("More than 1 possible node name found.  Aborting.")
+          exit 1
+        end
+        results.first.first.name
       end
 
     end
