@@ -51,6 +51,20 @@ This plugin provides the following Knife subcommands.  Specific command options 
 
 Provisions a new server in the Amazon EC2 and then perform a Chef bootstrap (using the SSH protocol).  The goal of the bootstrap is to get Chef installed on the target system so it can run Chef Client with a Chef Server. The main assumption is a baseline OS installation exists (provided by the provisioning). It is primarily intended for Chef Client systems that talk to a Chef server.  By default the server is bootstrapped using the {ubuntu10.04-gems}[https://github.com/opscode/chef/blob/master/chef/lib/chef/knife/bootstrap/ubuntu10.04-gems.erb] template.  This can be overridden using the <tt>-d</tt> or <tt>--template-file</tt> command options.
 
+The --use-winrm option can be used to bootstrap a distro or template file using the winrm functionality instead of SSH, which is not natively supported on Windows.
+
+Custom disk topologies can also be referenced using the --device-map option.  This allows you to easily add additional EBS volumes, or attach ephemeral storage, during the server creation process.  The JSON file closely follows the EC2 api ec2-run-instances syntax.  For example, the following mapping file would attach a 100GB EBS volume as drive "D" and the ephemeral storage for the EC2 instance as drive "E":
+
+    [ {
+       "DeviceName" : "xvdf",
+       "Ebs.VolumeSize" : "100",
+       "Ebs.DeleteOnTermination" : "true"
+     },{
+      "DeviceName" : "xvdg",
+       "VirtualName" : "ephemeral0"
+     }
+     ]
+
 == knife ec2 server delete
 
 Deletes an existing server in the currently configured AWS account.  <b>PLEASE NOTE</b> - By default, this does not delete the associated node and client objects from the Chef server.  To do so, add the <tt>--purge</tt> flag.
