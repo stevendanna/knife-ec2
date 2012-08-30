@@ -1,6 +1,7 @@
 #
 # Author:: Adam Jacob (<adam@opscode.com>)
 # Author:: Seth Chisamore (<schisamo@opscode.com>)
+# Contributor:: Shaun Hope (<shope99@yahoo.com>)
 # Copyright:: Copyright (c) 2010-2011 Opscode, Inc.
 # License:: Apache License, Version 2.0
 #
