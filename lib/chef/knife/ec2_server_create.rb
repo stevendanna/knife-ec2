@@ -183,12 +183,12 @@ class Chef
       option :device_map_file,
         :long => "--device-map DEVICE_MAP_FILE",
         :description => "JSON file containing additional block device mappings to add on instance creation"
-    
+
       def tcp_test_ssh(hostname, port, expect_header=true)
         tcp_socket = TCPSocket.new(hostname, port)
         Chef::Log.debug("got tcp_socket")
         readable = IO.select([tcp_socket], nil, nil, 5)
-        if readable || !expect_header         
+        if readable || !expect_header
           header = expect_header ? "banner is #{tcp_socket.gets}" : "no header expected"
           Chef::Log.debug("#{use_winrm? ? 'winrm' : 'sshd'} accepting connections on #{hostname}, #{header}")
           yield
@@ -222,7 +222,7 @@ class Chef
         $stdout.sync = true
 
         validate!
-       
+
         @server = connection.servers.create(create_server_def)
 
         hashed_tags={}
@@ -248,7 +248,7 @@ class Chef
         # default security group id at this point unless we look it up, hence
         # 'default' is printed if no id was specified.
         printed_security_groups = "default"
-        printed_security_groups = @server.groups.join(", ") if @server.groups 
+        printed_security_groups = @server.groups.join(", ") if @server.groups
         msg_pair("Security Groups", printed_security_groups) unless vpc_mode? or (@server.groups.nil? and @server.security_group_ids)
 
         printed_security_group_ids = "default"
@@ -276,7 +276,7 @@ class Chef
 
         print "\n#{ui.color("Waiting for #{use_winrm? ? 'winrm' : 'sshd'}", :magenta)}"
 
-        fqdn = vpc_mode? ? @server.private_ip_address : @server.dns_name        
+        fqdn = vpc_mode? ? @server.private_ip_address : @server.dns_name
 
         port = config[:ssh_port]
         print(".") until tcp_test_ssh(fqdn, port, !use_winrm?) {
@@ -290,7 +290,7 @@ class Chef
           require 'chef/knife/winrm'
           require 'chef/knife/winrm_base'
           require 'em-winrm'
-        end 
+        end
 
         bootstrap_for_node(@server,fqdn).run
 
@@ -334,8 +334,8 @@ class Chef
         msg_pair("JSON Attributes",config[:json_attributes]) unless config[:json_attributes].empty?
       end
 
-      def bootstrap_for_node(server,fqdn)        
-        bootstrap = use_winrm? ? Chef::Knife::BootstrapWindowsWinrm.new : Chef::Knife::Bootstrap.new        
+      def bootstrap_for_node(server,fqdn)
+        bootstrap = use_winrm? ? Chef::Knife::BootstrapWindowsWinrm.new : Chef::Knife::Bootstrap.new
         bootstrap.name_args = [fqdn]
         bootstrap.config[:run_list] = config[:run_list]
         bootstrap.config[:ssh_user] = config[:ssh_user]
@@ -362,7 +362,7 @@ class Chef
 
       def use_winrm?
         !!config[:use_winrm]
-      end 
+      end
 
       def ami
         puts "Locate image: #{locate_config_value(:image)}"
@@ -377,7 +377,7 @@ class Chef
           ui.error("You have not provided a valid image (AMI) value.  Please note the short option for this value recently changed from '-i' to '-I'.")
           exit 1
         end
-        
+
         if vpc_mode? and !!config[:security_groups]
           ui.error("You are using a VPC, security groups specified with '-G' are not allowed, specify one or more security group ids with '-g' instead.")
           exit 1
@@ -442,7 +442,7 @@ class Chef
             device_map = JSON.parse(File.read(config[:device_map_file]))
             server_def[:block_device_mapping].concat(device_map)
             Chef::Log.debug("Mapping devices... #{server_def[:block_device_mapping] }")
-          end 
+          end
 
         end
 
